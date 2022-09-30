@@ -2,6 +2,8 @@
 const express = require('express');
 const app = express();
 const dbConnection = require('../mongodb/mongodb');
+const {ObjectId} = require("mongodb");
+
 
 app.use(express.json());
 
@@ -22,14 +24,39 @@ app.post('/addUser', async (req,resp)=>{
     resp.send((data));
 });
 
-app.put('/editUser', async (req,resp)=>{
+app.put('/editUser/:id', async (req,resp)=>{
     const db = await dbConnection();
-    const result = db.insertOne(req.body);
+    var id = req.params.id;
 
+    const result = db.updateOne({_id:new ObjectId(id)},{$set:req.body});
+
+    if(result.acknowledged){
+        console.log("Record Updated");
+    }else{
+        console.log(id);
+    }
     var mysort = { _id: -1 };
     data = await db.find().sort(mysort).toArray();
 
-    resp.send((data));
+    resp.send(data);
+});
+
+
+app.delete('/deleteUser/:id', async (req,resp)=>{
+    const db = await dbConnection();
+    var id = req.params.id;
+
+    const result = db.deleteOne({_id:new ObjectId(id)});
+
+    if(result.acknowledged){
+        console.log("Record Deleted");
+    }else{
+        console.log(id);
+    }
+    var mysort = { _id: -1 };
+    data = await db.find().sort(mysort).toArray();
+
+    resp.send(data);
 });
 
 
